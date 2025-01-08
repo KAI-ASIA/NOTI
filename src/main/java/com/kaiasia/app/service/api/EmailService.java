@@ -33,8 +33,6 @@ public class EmailService {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private GetErrorUtils apiErrorUtils;
-    @Autowired
     private GetErrorUtils getErrorUtils;
 
     @KaiMethod(name = "EmailService", type = Register.VALIDATE)
