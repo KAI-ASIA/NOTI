@@ -19,7 +19,7 @@ public class ValidatorUtils {
 
         for (ConstraintViolation<T> constraintViolation : constraintViolations) {
             if (constraintViolation.getMessage() != null) {
-                return getErrorUtils.getError("300", new String[]{constraintViolation.getPropertyPath().toString() + constraintViolation.getMessage()});
+                return getErrorUtils.getError("300", new String[]{ constraintViolation.getMessage()});
             }
 
         }

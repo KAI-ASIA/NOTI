@@ -7,6 +7,7 @@ import com.kaiasia.app.core.utils.GetErrorUtils;
 import com.kaiasia.app.register.KaiMethod;
 import com.kaiasia.app.register.KaiService;
 import com.kaiasia.app.register.Register;
+import com.kaiasia.app.service.model.EmailValid;
 import com.kaiasia.app.service.model.Trans;
 import com.kaiasia.app.service.model.TransResponse;
 import com.kaiasia.app.service.utils.ValidatorUtils;
@@ -19,6 +20,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.constraints.Email;
 import java.util.*;
 
 @KaiService
@@ -35,6 +37,7 @@ public class EmailService {
     private GetErrorUtils getErrorUtils;
 
     @Value("${spring.mail.username}")
+    @Email(message = "Invalid fromEmail address")
     private String fromEmail;
 
     @KaiMethod(name = "EmailService", type = Register.VALIDATE)
@@ -70,17 +73,20 @@ public class EmailService {
 
         Trans trans=objectMapper.convertValue(transaction,Trans.class);
 
-        error= ValidatorUtils.validate(trans,getErrorUtils);
-
-        if(!ApiError.OK_CODE.equals(error.getCode())&& !ApiError.OK_DESC.equals(error.getDesc())){
-
-            log.error(Location);
-
-            apiResponse.setError(error);
-            return apiResponse;
-        }
-
         String[] toEmails= trans.getTo().split(",");
+        for (String email:toEmails) {
+            EmailValid emailValid=new EmailValid();
+            emailValid.setEmail(email);
+            error= ValidatorUtils.validate(emailValid,getErrorUtils);
+
+            if(!ApiError.OK_CODE.equals(error.getCode())&& !ApiError.OK_DESC.equals(error.getDesc())){
+
+                log.error(Location);
+
+                apiResponse.setError(error);
+                return apiResponse;
+            }
+        }
 
         // gửi email
         SimpleMailMessage message = new SimpleMailMessage();
