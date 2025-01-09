@@ -17,8 +17,6 @@ import javax.validation.constraints.NotNull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Trans {
     private String authenType;
-
-    @Email(message = "Email is not correct format")
     private String to;
     private String content;
 }

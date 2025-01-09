@@ -13,14 +13,13 @@ import com.kaiasia.app.service.utils.ValidatorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import javax.validation.ConstraintViolation;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.*;
 
 @KaiService
 @Slf4j
@@ -35,18 +34,24 @@ public class EmailService {
     @Autowired
     private GetErrorUtils getErrorUtils;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     @KaiMethod(name = "EmailService", type = Register.VALIDATE)
     public ApiError validate(ApiRequest req) throws Exception {
+
+
+        if(req.getBody()==null){
+            return getErrorUtils.getError("706",new String []{"#asd"});
+        }
 
         LinkedHashMap<String,Object> transaction=(LinkedHashMap) req.getBody().get("transaction");
 
         Trans trans=objectMapper.convertValue(transaction,Trans.class);
 
         if(StringUtils.isBlank(trans.getTo())){
-            return apiErrorUtils.getError("706",new String[]{"#email to"});
+            return getErrorUtils.getError("706",new String []{"#to Email"});
         }
-
-
 
         return new ApiError(ApiError.OK_CODE,ApiError.OK_DESC);
     }
@@ -61,7 +66,7 @@ public class EmailService {
         ApiResponse apiResponse=new ApiResponse();
         apiResponse.setHeader(req.getHeader());
         ApiBody body=new ApiBody();
-        ApiError error=new ApiError();
+        ApiError error= new ApiError();
 
         Trans trans=objectMapper.convertValue(transaction,Trans.class);
 
@@ -75,10 +80,15 @@ public class EmailService {
             return apiResponse;
         }
 
+        String[] toEmails= trans.getTo().split(",");
+
+        // gửi email
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject(trans.getAuthenType());
         message.setText(trans.getContent());
-        message.setFrom(trans.getTo());
+        message.setTo(toEmails);
+        message.setFrom(fromEmail);
+
 
         try{
             mailSender.send(message);
@@ -94,7 +104,7 @@ public class EmailService {
         }
         catch (MailException e){
 
-            log.error(Location+"send Email Failed",e);
+            log.error("{}:{}",Location+"send Email Failed",e);
             error=getErrorUtils.getError("");
             body.put("error",error);
             body.put("status","FAILED");
