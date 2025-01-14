@@ -1,4 +1,4 @@
-package com.kaiasia.app.service.model;
+package com.kaiasia.app.service.notify_otp.model;
 
 import lombok.Data;
 import lombok.Getter;

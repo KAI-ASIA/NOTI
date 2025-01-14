@@ -1,4 +1,4 @@
-package com.kaiasia.app.service.model;
+package com.kaiasia.app.service.notify_otp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Trans {
+
     private String authenType;
     private String to;
     private String content;

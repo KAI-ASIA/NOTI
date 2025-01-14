@@ -1,16 +1,16 @@
-package com.kaiasia.app.service.api;
+package com.kaiasia.app.service.notify_otp.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kaiasia.app.core.model.*;
-import com.kaiasia.app.core.utils.ApiConstant;
 import com.kaiasia.app.core.utils.GetErrorUtils;
 import com.kaiasia.app.register.KaiMethod;
 import com.kaiasia.app.register.KaiService;
 import com.kaiasia.app.register.Register;
-import com.kaiasia.app.service.model.EmailValid;
-import com.kaiasia.app.service.model.Trans;
-import com.kaiasia.app.service.model.TransResponse;
-import com.kaiasia.app.service.utils.ValidatorUtils;
+import com.kaiasia.app.service.notify_otp.model.EmailValid;
+import com.kaiasia.app.service.notify_otp.model.Trans;
+import com.kaiasia.app.service.notify_otp.model.TransResponse;
+import com.kaiasia.app.service.notify_otp.utils.EmailSender;
+import com.kaiasia.app.service.notify_otp.utils.ValidatorUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,6 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.constraints.Email;
 import java.util.*;
 
@@ -28,13 +27,13 @@ import java.util.*;
 public class EmailService {
 
     @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private GetErrorUtils getErrorUtils;
+
+    @Autowired
+    private EmailSender emailSender;
 
     @Value("${spring.mail.username}")
     @Email(message = "Invalid fromEmail address")
@@ -55,6 +54,7 @@ public class EmailService {
         if(StringUtils.isBlank(trans.getTo())){
             return getErrorUtils.getError("706",new String []{"#to Email"});
         }
+
 
         return new ApiError(ApiError.OK_CODE,ApiError.OK_DESC);
     }
@@ -89,32 +89,16 @@ public class EmailService {
         }
 
         // gửi email
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject(trans.getAuthenType());
-        message.setText(trans.getContent());
-        message.setTo(toEmails);
-        message.setFrom(fromEmail);
-
-
-        try{
-            mailSender.send(message);
-
-            log.info(Location+"Email sent successfully");
-
+        boolean isEmailSent=emailSender.send(Location,toEmails,trans);
+        if(isEmailSent){
             TransResponse transResponse=new TransResponse();
-            transResponse.setContent("send email successfully");
-            body.put("transaction",transResponse);
+            transResponse.setContent("sent email successfully");
+            body.put("trans",transResponse);
             apiResponse.setBody(body);
-
-
         }
-        catch (MailException e){
-
-            log.error("{}:{}",Location+"send Email Failed",e);
+        else {
             error=getErrorUtils.getError("");
-            body.put("error",error);
-            body.put("status","FAILED");
-            return apiResponse;
+            apiResponse.setError(error);
         }
 
         return apiResponse;

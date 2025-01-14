@@ -1,4 +1,4 @@
-package com.kaiasia.app.service.utils;
+package com.kaiasia.app.service.notify_otp.utils;
 
 import com.kaiasia.app.core.model.ApiError;
 import com.kaiasia.app.core.utils.GetErrorUtils;
