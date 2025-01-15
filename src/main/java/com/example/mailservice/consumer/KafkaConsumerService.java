@@ -2,6 +2,7 @@ package com.example.mailservice.consumer;
 
 import com.example.mailservice.service.MailService;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ public class KafkaConsumerService {
         this.mailService = mailService;
     }
 
-    @KafkaListener(topics = "otp-topic", groupId = "otp-group")
+    @KafkaListener(topics = "${kafka.consumer.topic}", groupId = "${kafka.consumer.group-id}")
     public void consumeMessage(String message) {
         try {
             // Chuyển đổi chuỗi JSON thành JSONObject
